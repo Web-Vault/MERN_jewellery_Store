@@ -193,11 +193,12 @@ const ProductListing = () => {
                                                                         onChange={(e) => setPriceRange(e.target.value)}
                                                                 />
                                                                 <div className="flex justify-between text-[#6B4E4D]/80">
-                                                                        <span>₹0</span>
-                                                                        <span>₹20,000</span>
+                                                                        <span>₹0</span>           
+                                                                        <span>₹{priceRange}</span> {/* Display dynamic value */}
                                                                 </div>
                                                         </div>
                                                 </div>
+                                                
                                         </div>
                                 </div>
                         </aside>

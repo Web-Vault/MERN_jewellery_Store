@@ -9,7 +9,6 @@ import {
   X,
   SearchIcon,
 } from "lucide-react";
-import axios from "axios";
 
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -17,9 +16,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,34 +56,6 @@ const Navbar = () => {
   //   const data = await response.json();
   //   setSearchResults(data);
   // };
-
-  //
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.get(
-        `/api/products/search?query=${encodeURIComponent(searchQuery)}`
-      );
-      navigate("/search-results", { state: { results: response.data } });
-      onSearchClose();
-    } catch (error) {
-      console.error("Search error:", error);
-    }
-  };
-
-  const fetchSuggestions = async (query) => {
-    if (query.length > 2) {
-      try {
-        const response = await axios.get(
-          `/api/products/suggest?q=${encodeURIComponent(query)}`
-        );
-        setSuggestions(response.data);
-      } catch (error) {
-        console.error("Suggestions error:", error);
-      }
-    }
-  };
 
   return (
     <>
@@ -273,10 +242,7 @@ const Navbar = () => {
       {isSearchOpen && (
         <div className="fixed top-24 right-3 w-full z-40 flex justify-end px-4 md:px-0">
           <div className="w-full max-w-2xl bg-white border border-[#e0d6cc] shadow-xl rounded-2xl overflow-hidden transition-all duration-300">
-            <form
-              onSubmit={handleSearch}
-              className="flex items-center px-4 py-3 space-x-3"
-            >
+            <div className="flex items-center px-4 py-3 space-x-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 text-[#b76e79]"
@@ -293,38 +259,13 @@ const Navbar = () => {
               </svg>
               <input
                 type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  fetchSuggestions(e.target.value);
-                }}
                 placeholder="Search for something magical..."
                 className="flex-1 text-gray-800 placeholder-gray-500 bg-transparent outline-none text-sm"
               />
-              <button
-                type="submit"
-                className="bg-[#b76e79] hover:bg-[#9d5a64] text-white px-4 py-2 text-sm rounded-lg transition-all duration-200"
-              >
+              <button className="bg-[#b76e79] hover:bg-[#9d5a64] text-white px-4 py-2 text-sm rounded-lg transition-all duration-200">
                 Search
               </button>
-            </form>
-
-            {suggestions.length > 0 && (
-              <div className="border-t border-[#e0d6cc] py-2">
-                {suggestions.map((suggestion, index) => (
-                  <div
-                    key={index}
-                    className="px-4 py-2 hover:bg-[#f8f3ef] cursor-pointer text-sm"
-                    onClick={() => {
-                      setSearchQuery(suggestion);
-                      setSuggestions([]);
-                    }}
-                  >
-                    {suggestion}
-                  </div>
-                ))}
-              </div>
-            )}
+            </div>
           </div>
         </div>
       )}

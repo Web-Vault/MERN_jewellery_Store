@@ -147,132 +147,40 @@ export const getProductsByCategory = async (req, res) => {
       .lean();
     res.status(200).json(products);
   } catch (error) {
-    res.status(500).json({
-      message: "Error fetching products by category",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({
+        message: "Error fetching products by category",
+        error: error.message,
+      });
   }
 };
-
-// export const searchProducts = async (req, res) => {
-//   try {
-//     const query = req.query.q;
-
-//     if (!query) {
-//       return res.status(400).json({ message: "Search query is required" });
-//     }
-
-//     const keywords = query
-//       .split(" ")
-//       .filter((word) => word.trim() !== "")
-//       .map((word) => new RegExp(word, "i")); // case-insensitive regex
-
-//     const results = await Product.find({
-//       $or: [
-//         { title: { $in: keywords } },
-//         { description: { $in: keywords } },
-//         { category: { $in: keywords } },
-//         { tags: { $in: keywords } }, // assuming tags is an array
-//       ],
-//     });
-
-//     res.status(200).json(results);
-//   } catch (error) {
-//     console.error("❌ Error in search:", error);
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
-
-// import Product from '../models/Product.js';
-// import Category from '../models/Category.js';
 
 export const searchProducts = async (req, res) => {
   try {
-    const { query } = req.query;
+    const query = req.query.q;
 
-    // Parse the search query
-    const { searchTerms, maxPrice, categoryNames } = await parseSearchQuery(
-      query
-    );
-
-    // Find matching categories
-    let categoryIds = [];
-    if (categoryNames.length > 0) {
-      const categories = await Category.find({
-        name: { $in: categoryNames.map((n) => new RegExp(n, "i")) },
-      });
-      categoryIds = categories.map((c) => c._id);
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
     }
 
-    // Build the filter
-    const filter = {
-      $and: [
-        { $text: { $search: searchTerms } },
-        ...(maxPrice ? [{ price: { $lte: maxPrice } }] : []),
-        ...(categoryIds.length > 0 ? [{ category: { $in: categoryIds } }] : []),
+    const keywords = query
+      .split(" ")
+      .filter((word) => word.trim() !== "")
+      .map((word) => new RegExp(word, "i")); // case-insensitive regex
+
+    const results = await Product.find({
+      $or: [
+        { title: { $in: keywords } },
+        { description: { $in: keywords } },
+        { category: { $in: keywords } },
+        { tags: { $in: keywords } }, // assuming tags is an array
       ],
-    };
+    });
 
-    const products = await Product.find(filter)
-      .populate("category")
-      .sort({ score: { $meta: "textScore" } });
-
-    res.json(products);
+    res.status(200).json(results);
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Helper function to parse natural language queries
-const parseSearchQuery = async (query) => {
-  const result = {
-    searchTerms: "",
-    maxPrice: null,
-    categoryNames: [],
-  };
-
-  // Extract price constraints
-  const priceRegex = /(under|below|less than)\s+₹?(\d+)/i;
-  const priceMatch = query.match(priceRegex);
-  if (priceMatch) {
-    result.maxPrice = parseInt(priceMatch[2]);
-    query = query.replace(priceRegex, "");
-  }
-
-  // Extract category names (you might need to modify this based on your actual categories)
-  const categoryRegex = /(ring|necklace|bracelet|earrings?|bangle|pendant)/gi;
-  result.categoryNames = [...(new Set(query.match(categoryRegex)) || [])];
-  query = query.replace(categoryRegex, "");
-
-  // Remaining text becomes search terms
-  result.searchTerms = query.trim();
-
-  return result;
-};
-
-// In productController.js
-export const getSearchSuggestions = async (req, res) => {
-  try {
-    const { q } = req.query;
-    const products = await Product.find(
-      { $text: { $search: q } },
-      { score: { $meta: "textScore" } }
-    )
-      .sort({ score: { $meta: "textScore" } })
-      .limit(5);
-
-    const suggestions = Array.from(
-      new Set(
-        products.flatMap((p) => [
-          p.name,
-          `under ${Math.ceil(p.price / 1000) * 1000}`, // Price brackets
-          p.category.name, // Assuming category is populated
-        ])
-      )
-    ).slice(0, 5);
-
-    res.json(suggestions);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("❌ Error in search:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
