@@ -9,11 +9,8 @@ export const storeOrderAfterPayment = async (req, res) => {
 
         // Extract data
         const { items, totalAmount, paymentId, paymentStatus } = req.body;
-        let user = req.user?._id;  // Extract from token
+        let user = req.user?._id;  // This could be undefined if auth fails
 
-        console.log("🟢 Extracted User ID from Token:", user);
-
-        // If `req.user` is missing, check if user ID was sent in body
         if (!user && req.body.user) {
             console.warn("⚠️ User not found in token! Using provided user ID:", req.body.user);
             user = req.body.user;

@@ -48,9 +48,8 @@ router.get('/random', async (req, res) => {
         }
 });
 
-
+// Search route using query parameters
 router.get('/search', searchProducts);
-
 
 router.put("/:id", protect, admin, updateProduct); // Admin updates a product
 router.delete("/:id", protect, admin, deleteProduct); // Admin deletes a product

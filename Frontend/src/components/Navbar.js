@@ -49,13 +49,41 @@ const Navbar = () => {
     navigate("/");
   };
 
-  // const fetchSearchResults = async () => {
-  //   const response = await fetch(
-  //     `http://localhost:5000/api/products/search?q=${encodeURIComponent(searchText)}`
-  //   );
-  //   const data = await response.json();
-  //   setSearchResults(data);
-  // };
+  const [searchText, setSearchText] = useState("");
+
+  const handleSearch = async () => {
+    if (!searchText.trim()) {
+      alert("Please enter a search term");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/products/search?q=${encodeURIComponent(
+          searchText.trim()
+        )}`
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to search products");
+      }
+
+      const data = await response.json();
+
+      // Ensure we have a valid array of results
+      const results = Array.isArray(data) ? data : data.products || [];
+
+      navigate("/search-results", { state: { results } });
+      setIsSearchOpen(false);
+      setSearchText("");
+    } catch (error) {
+      console.error("Error searching products:", error);
+      alert(error.message || "Failed to search products");
+      setIsSearchOpen(false);
+      setSearchText("");
+    }
+  };
 
   return (
     <>
@@ -259,10 +287,16 @@ const Navbar = () => {
               </svg>
               <input
                 type="text"
-                placeholder="Search for something magical..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                placeholder="Try 'gold ring under 5000'..."
                 className="flex-1 text-gray-800 placeholder-gray-500 bg-transparent outline-none text-sm"
               />
-              <button className="bg-[#b76e79] hover:bg-[#9d5a64] text-white px-4 py-2 text-sm rounded-lg transition-all duration-200">
+              <button
+                onClick={handleSearch}
+                className="bg-[#b76e79] hover:bg-[#9d5a64] text-white px-4 py-2 text-sm rounded-lg transition-all duration-200"
+              >
                 Search
               </button>
             </div>

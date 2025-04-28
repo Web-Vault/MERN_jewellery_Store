@@ -99,7 +99,7 @@ export const getProductFromCollectionsAndAddToWishList = async (req, res) => {
         console.log("Id in request body", product.productId);
         console.log("✅ Received product for wishlist:", product.productId);
 
-        const userId = req.user?.id;
+        const userId = req.user?.id;  // This should be req.user?._id to match MongoDB's _id field
         console.log("👤 User ID:", userId);
 
         if (!userId) {

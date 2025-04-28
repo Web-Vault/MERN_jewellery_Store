@@ -164,23 +164,71 @@ export const searchProducts = async (req, res) => {
       return res.status(400).json({ message: "Search query is required" });
     }
 
-    const keywords = query
-      .split(" ")
-      .filter((word) => word.trim() !== "")
-      .map((word) => new RegExp(word, "i")); // case-insensitive regex
+    // Parse price conditions from natural language
+    const priceMatch = query.match(/under (\d+)/i);
+    const priceFilter = priceMatch ? { price: { $lte: parseInt(priceMatch[1]) } } : {};
 
-    const results = await Product.find({
+    // Extract material keywords
+    const materials = ['gold', 'silver', 'platinum', 'diamond'];
+    const materialKeywords = query.split(' ').filter(word => 
+      materials.includes(word.toLowerCase())
+    );
+
+    // Extract product type keywords
+    const types = ['ring', 'necklace', 'bracelet', 'earring'];
+    const typeKeywords = query.split(' ').filter(word => 
+      types.includes(word.toLowerCase())
+    );
+
+    // Build search criteria
+    let searchCriteria = {
       $or: [
-        { title: { $in: keywords } },
-        { description: { $in: keywords } },
-        { category: { $in: keywords } },
-        { tags: { $in: keywords } }, // assuming tags is an array
-      ],
+        { name: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } }
+      ]
+    };
+
+    // Add price filter if exists
+    if (Object.keys(priceFilter).length > 0) {
+      searchCriteria = {
+        $and: [
+          searchCriteria,
+          priceFilter
+        ]
+      };
+    }
+
+    // Add material and type specific search if found
+    if (materialKeywords.length > 0 || typeKeywords.length > 0) {
+      const keywords = [...materialKeywords, ...typeKeywords];
+      searchCriteria.$or.push(
+        { category: { $regex: new RegExp(keywords.join('|'), 'i') } }
+      );
+    }
+
+    const products = await Product.find(searchCriteria)
+      .populate('category', 'name')
+      .select('-__v')
+      .lean();
+
+    if (products.length === 0) {
+      return res.status(200).json({ 
+        message: "No products found matching your search criteria",
+        products: [] 
+      });
+    }
+
+    res.status(200).json({
+      message: "Products found successfully",
+      count: products.length,
+      products
     });
 
-    res.status(200).json(results);
   } catch (error) {
-    console.error("❌ Error in search:", error);
-    res.status(500).json({ message: "Server Error" });
+    console.error('Search error:', error);
+    res.status(500).json({ 
+      message: "Error searching products", 
+      error: error.message 
+    });
   }
 };

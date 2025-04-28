@@ -20,7 +20,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ReviewPage from './pages/ReviewPage';
 import CollectionsPage from './pages/CollectionPage';
-
+import SearchResults from './pages/searchResults';
 
 // admin
 import AdminLogin from './admin/AdminLogin';
@@ -81,6 +81,7 @@ const MainLayout = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/products" element={<ProductListing />} />
           <Route path="/product/:id" element={<SingleProduct />} />
+          <Route path="/search-results" element={<SearchResults />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/logout" element={<Logout />} />
@@ -96,6 +97,7 @@ const MainLayout = () => {
           <Route path="/review" element={isAuthenticated ? <ReviewPage /> : <Login />} />
           <Route path="/profile" element={isAuthenticated ? <Profile /> : <Login />} />
           <Route path="/edit-profile" element={isAuthenticated ? <EditProfile /> : <Login />} />
+
 
           {/* Admin routes - MOVE THESE TO THE TOP */}
 

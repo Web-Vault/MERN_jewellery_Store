@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { default as generatePDF } from 'react-to-pdf';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { X, ShoppingCart, Eye, Star, Share2, Printer, Gift, HeartOff } from 'lucide-react'
@@ -7,6 +8,7 @@ const Wishlist = () => {
         const [wishlist, setWishlist] = useState([]);
         const [loading, setLoading] = useState(true);
         const [message, setMessage] = useState("");
+        const pdfRef = useRef(null);
         const navigate = useNavigate();
 
         useEffect(() => {
@@ -86,13 +88,32 @@ const Wishlist = () => {
 
         if (loading) return <div className="text-center text-gray-600 py-10">Loading wishlist...</div>;
 
+        const handlePrintSummary = async () => {
+                const options = {
+                        filename: 'wishlist-summary.pdf',
+                        page: {
+                                margin: 20,
+                                format: 'A4'
+                        }
+                };
+
+                try {
+                        await generatePDF(pdfRef, options);
+                        setMessage("✅ PDF generated successfully!");
+                } catch (error) {
+                        console.error('Error generating PDF:', error);
+                        setMessage("❌ Failed to generate PDF");
+                }
+                hideMessage();
+        };
+
         return (
                 <div className="min-h-screen bg-[#FAF6F0] relative mt-[60px] overflow-hidden">
                         {/* Decorative Elements */}
                         <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-br from-[#B76E79]/5 to-transparent -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
                         <div className="absolute bottom-0 right-0 w-1/2 h-full bg-gradient-to-tl from-[#C5A880]/5 to-transparent translate-x-1/2 translate-y-1/2 rounded-full blur-3xl" />
 
-                        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16" ref={pdfRef}>
                                 {/* Header Section */}
                                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-16">
                                         <div className="space-y-4">
@@ -201,10 +222,13 @@ const Wishlist = () => {
                                                                         <Share2 className="w-5 h-5" />
                                                                         Share Collection
                                                                 </button>
-                                                                {/* <button className="w-full flex items-center gap-3 text-[#6B4E4D] hover:text-[#B76E79] p-3 rounded-lg hover:bg-[#B76E79]/5 transition-colors">
+                                                                <button 
+                                                                        onClick={handlePrintSummary}
+                                                                        className="w-full flex items-center gap-3 text-[#6B4E4D] hover:text-[#B76E79] p-3 rounded-lg hover:bg-[#B76E79]/5 transition-colors"
+                                                                >
                                                                         <Printer className="w-5 h-5" />
                                                                         Print Summary
-                                                                </button> */}
+                                                                </button>
                                                                 <button className="w-full flex items-center gap-3 text-[#6B4E4D] hover:text-[#B76E79] p-3 rounded-lg hover:bg-[#B76E79]/5 transition-colors">
                                                                         <Gift className="w-5 h-5" />
                                                                         Create Gift List

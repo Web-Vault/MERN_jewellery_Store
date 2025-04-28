@@ -15,6 +15,7 @@ import {
         MessageCircle,
 } from 'lucide-react';
 import RecommendedProducts from "../components/RecommendedProducts";
+import WishlistSelector from '../components/WishlistSelector';
 
 const SingleProduct = () => {
         const { id } = useParams(); // Extract product ID from URL
@@ -23,6 +24,8 @@ const SingleProduct = () => {
         const [error, setError] = useState(null);
         const [message, setMessage] = useState(""); // State for feedback messages
         const [reviews, setReviews] = useState([]);
+
+        const [isWishlistSelectorOpen, setIsWishlistSelectorOpen] = useState(false);
 
         // temporary
         // const reviews = [
@@ -271,12 +274,18 @@ const SingleProduct = () => {
                                                                 Add to Cart
                                                         </button>
                                                         <button
-                                                                onClick={handleAddToWishlist}
+                                                                onClick={() => setIsWishlistSelectorOpen(true)}
                                                                 className="flex-1 flex items-center justify-center gap-2 border-2 border-[#B76E79] text-[#B76E79] py-4 px-8 rounded-xl hover:bg-[#B76E79]/10 transition-colors"
                                                         >
                                                                 <Heart className="w-5 h-5" />
                                                                 Wishlist
                                                         </button>
+
+                                                        <WishlistSelector
+                                                                isOpen={isWishlistSelectorOpen}
+                                                                onClose={() => setIsWishlistSelectorOpen(false)}
+                                                                productId={id}
+                                                        />
                                                 </div>
                                                 {message && (
                                                         <div className="mt-4 p-3 bg-emerald-100 text-emerald-700 rounded-lg flex items-center gap-2">
@@ -459,6 +468,3 @@ const SingleProduct = () => {
 };
 
 export default SingleProduct;
-
-
-// 
